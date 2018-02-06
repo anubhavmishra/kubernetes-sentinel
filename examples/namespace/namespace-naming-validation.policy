@@ -1,0 +1,42 @@
+import "tfplan"
+import "strings"
+
+my_company_name_prefix = "hashicorp-"
+
+// name_for function finds the 'name' field in the metadata
+// of the kubernetes resource
+
+name_for = func(resource) {
+	for resource as _, data {
+		for data as _, v {
+			for v.applied.metadata as _, metadata {
+				return metadata["name"]
+			}
+		}
+	}
+
+	// Return empty string if 'name' field doesn't exist in metadata
+	return ""
+}
+
+// kubernetes_namespaces function return a list of 'kubernetes_namespace' resources
+
+kubernetes_namespaces = func() {
+	namespaces = []
+	// Iterate over all the resources in the Terraform plan and
+	// find kubernetes_namespace resource
+	for tfplan.resources as type, resource {
+		if type is "kubernetes_namespace" {
+			namespaces += [resource]
+		}
+	}
+
+	// Return a list of kubernetes namespaces found in the Terraform plan
+	return namespaces
+}
+
+main = rule {
+	all kubernetes_namespaces() as namespace {
+		strings.has_prefix(name_for(namespace), my_company_name_prefix)
+	}
+}

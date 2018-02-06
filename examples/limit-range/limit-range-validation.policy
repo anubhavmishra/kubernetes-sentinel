@@ -1,0 +1,46 @@
+import "tfplan"
+import "strings"
+
+// check_cpu_limit_for function finds cpu limit of a pod in the
+// limit range resource and checks whether is below a desired value
+
+check_cpu_limit_for = func(resource) {
+	for resource as _, data {
+		for data as _, v {
+			for v.applied.spec as _, spec {
+				for spec["limit"] as limit {
+					if limit["type"] is "Pod" {
+						cpu = int(strings.trim_suffix(limit["max"].cpu, "m"))
+						if cpu > 2000 {
+							return false
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return true // Skip the validation if the limit 'type' isn't a pod
+}
+
+// kubernetes_services function return a list of 'kubernetes_service' resources
+
+kubernetes_limit_ranges = func() {
+	limit_ranges = []
+	// Iterate over all the resources in the Terraform plan and
+	// find kubernetes_limit_range resource
+	for tfplan.resources as type, resource {
+		if type is "kubernetes_limit_range" {
+			limit_ranges += [resource]
+		}
+	}
+
+	// Return a list of kubernetes limit ranges found in the Terraform plan
+	return limit_ranges
+}
+
+main = rule {
+	all kubernetes_limit_ranges() as limit_range {
+		check_cpu_limit_for(limit_range)
+	}
+}

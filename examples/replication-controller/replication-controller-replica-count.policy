@@ -1,0 +1,42 @@
+import "tfplan"
+
+// replicas_for function finds the value of 'replicas'
+// in the kubernetes resource
+
+replicas_for = func(resource) {
+	for resource as _, data {
+		for data as _, v {
+			for v.applied.spec as _, spec {
+				return int(spec["replicas"])
+			}
+		}
+	}
+
+	return false // false when replicas are not specified
+}
+
+// kubernetes_replication_controllers function return a list of
+// 'kubernetes_replication_controller' resources
+
+kubernetes_replication_controllers = func() {
+	replication_controllers = []
+	// Iterate over all the resources in the Terraform plan and
+	// find “kubernetes_replication_controller” resource
+	for tfplan.resources as type, resource {
+		if type is "kubernetes_replication_controller" {
+			replication_controllers += [resource]
+		}
+	}
+
+	// Return a list of kubernetes replication controllers
+	// found in the Terraform plan
+	return replication_controllers
+}
+
+main = rule {
+	// Iterate over all replication controller resources in the Terraform plan
+	all kubernetes_replication_controllers() as replication_controller {
+		// For each replication controller check if the replicas is less than 10
+		replicas_for(replication_controller) < 10
+	}
+}

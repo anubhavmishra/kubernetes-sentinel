@@ -1,0 +1,45 @@
+import "tfplan"
+
+allowed_service_types = [
+	"NodePort",
+	"ClusterIP",
+]
+
+// service_type_for function finds the value of service 'type'
+// in the kubernetes resource
+
+service_type_for = func(resource) {
+	for resource as _, data {
+		for data as _, v {
+			for v.applied.spec as _, spec {
+				return spec["type"]
+			}
+		}
+	}
+
+	return false // false when service 'type' is not specified
+}
+
+// kubernetes_services function return a list of 'kubernetes_service' resources
+
+kubernetes_services = func() {
+	services = []
+	// Iterate over all the resources in the Terraform plan and
+    // find “kubernetes_service” resource
+	for tfplan.resources as type, resource {
+		if type is "kubernetes_service" {
+			services += [resource]
+		}
+	}
+
+	return services // Return a list of kubernetes services found in the Terraform plan
+}
+
+// main is the entry point of the execution of Sentinel policies
+main = rule {
+	// Iterate over all Kubernetes services in the Terraform plan
+	all kubernetes_services() as service {
+		// For each Kubernetes service check the service type is allowed
+		service_type_for(service) in allowed_service_types
+	}
+}
