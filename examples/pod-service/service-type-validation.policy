@@ -25,7 +25,7 @@ service_type_for = func(resource) {
 kubernetes_services = func() {
 	services = []
 	// Iterate over all the resources in the Terraform plan and
-    // find “kubernetes_service” resource
+	// find “kubernetes_service” resource
 	for tfplan.resources as type, resource {
 		if type is "kubernetes_service" {
 			services += [resource]
