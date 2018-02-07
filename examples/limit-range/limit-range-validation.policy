@@ -23,7 +23,7 @@ check_cpu_limit_for = func(resource) {
 	return true // Skip the validation if the limit 'type' isn't a pod
 }
 
-// kubernetes_services function return a list of 'kubernetes_service' resources
+// kubernetes_services function returns a list of 'kubernetes_service' resources
 
 kubernetes_limit_ranges = func() {
 	limit_ranges = []

@@ -19,7 +19,7 @@ name_for = func(resource) {
 	return ""
 }
 
-// kubernetes_namespaces function return a list of 'kubernetes_namespace' resources
+// kubernetes_namespaces function returns a list of 'kubernetes_namespace' resources
 
 kubernetes_namespaces = func() {
 	namespaces = []
